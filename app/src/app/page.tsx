@@ -22,6 +22,15 @@ import {
 // Import your custom components
 import TableOfContents from "@/components/TableContent";
 import WalletConnection from "@/components/WalletConnectionButton";
+import EducationalPane from "@/components/EducationalPane";
+import contentSections from "@/data/contentSections";
+import {
+  useScrollSpy,
+  useScrollToSectionInContainer,
+} from "@/hooks/useScrollSpy";
+import StakeForm from "@/components/StakeForm";
+import UnstakeForm from "@/components/UnstakeForm";
+import RewardsView from "@/components/RewardsView";
 
 // Staking content structure
 const stakingContent = [
@@ -223,14 +232,28 @@ const createStakeAccount = async (
 export default function StakingDAppPage() {
   const { connected, publicKey } = useWallet();
   const { connection } = useConnection();
-  const [activeTab, setActiveTab] = useState("all");
   const [balance, setBalance] = useState<number | null>(null);
+  const ids = contentSections.map((s) => s.id);
+  const active = useScrollSpy(ids, { rootMargin: "-10% 0px -85% 0px" });
+  const scrollTo = useScrollToSectionInContainer();
+  const userBalance = balance;
+  const stakedAmount = 50.0; // Example staked amount
+  const totalEarned = 5.0; // Example total earned rewards
+  const claimed = 2.0; // Example claimed rewards
+  const claimedRewards = claimed;
+  const unclaimedRewards = totalEarned - claimedRewards;
 
-  // Filter content based on active tab
-  const filteredContent =
-    activeTab === "all"
-      ? stakingContent
-      : stakingContent.filter((item) => item.category === activeTab);
+  const handleClaimRewards = async () => {
+    // Implement claim rewards functionality
+  };
+
+  const handleStake = async (amount: number) => {
+    // Implement stake functionality
+  };
+
+  const handleUnstake = async (amount: number) => {
+    // Implement unstake functionality
+  };
 
   // Fetch wallet balance when connected
   useEffect(() => {
@@ -249,134 +272,52 @@ export default function StakingDAppPage() {
   }, [connected, publicKey, connection]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background pb-4">
       {/* Main Content */}
-      <main className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
+      <main className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)] ">
         {/* Left Side - Educational Content */}
-        <section className="order-2 md:order-1 md:w-[70%] w-full border-r ">
+        <section className="order-2 md:order-1 md:w-[70%] w-full md:border-r  px-4 md:px-0">
           <div className="flex h-full">
-            <div className="w-80 border-r bg-muted/30">
-              <div className="">
-                <TableOfContents
-                  items={filteredContent}
-                  containerId="educational-content"
-                  title="Staking Guide"
-                  subtitle="Navigate through concepts"
-                  className="border-0 shadow-none bg-transparent"
-                />
+            <div className="w-80 border-r ">
+              <div className="p-4 border-b bg-background hidden lg:block">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  Staking Guide
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Navigate through concepts
+                </p>
+              </div>
+              <div className="sticky top-4 float-right hidden p-3 max-w-xs z-10 w-80  bg-background lg:flex flex-col items-end">
+                {contentSections.map((sec) => (
+                  <button
+                    key={sec.id}
+                    className={`block w-fit text-right text-sm mb-1 ${
+                      active === sec.id
+                        ? "font-bold text-primary scale-100 "
+                        : "text-muted-foreground hover:text-foreground scale-95"
+                    }`}
+                    onClick={() => scrollTo(sec.id, "edu-content", 80)}
+                  >
+                    {sec.title}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Educational Content - Scrollable */}
-            <div className="flex-1">
+            <div className="md:flex-1 ">
               <div className="p-4 border-b bg-background">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-primary" />
-                  Educational Content
+                  Eductional Content
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Understanding Solana staking internals
                 </p>
               </div>
 
-              <div
-                className="h-[calc(100vh-160px)] overflow-y-auto"
-                id="educational-content"
-              >
-                <div className="p-6 space-y-8">
-                  {filteredContent.map((section) => {
-                    const Icon = section.icon;
-                    const content = educationalContent[section.id];
-
-                    return (
-                      <section
-                        key={section.id}
-                        id={section.id}
-                        className="scroll-mt-6"
-                      >
-                        <Card className="border-l-4 border-l-primary">
-                          <CardContent className="pt-6">
-                            <div className="flex items-start gap-4">
-                              <div className="p-3 bg-primary/10 rounded-lg">
-                                <Icon className="h-6 w-6 text-primary" />
-                              </div>
-                              <div className="flex-1 space-y-4">
-                                <div>
-                                  <h3
-                                    className={`font-semibold mb-2 ${
-                                      section.level === 1
-                                        ? "text-xl"
-                                        : "text-lg"
-                                    }`}
-                                  >
-                                    {section.title}
-                                  </h3>
-                                  <Badge variant="outline" className="text-xs">
-                                    {section.category}
-                                  </Badge>
-                                </div>
-
-                                {content && (
-                                  <>
-                                    <p className="text-muted-foreground">
-                                      {content.description}
-                                    </p>
-
-                                    {content.keyPoints && (
-                                      <div>
-                                        <h4 className="font-medium mb-2 text-sm">
-                                          Key Points:
-                                        </h4>
-                                        <ul className="space-y-1 text-sm">
-                                          {content.keyPoints.map(
-                                            (point: string, index: number) => (
-                                              <li
-                                                key={index}
-                                                className="flex items-start gap-2"
-                                              >
-                                                <Badge
-                                                  variant="secondary"
-                                                  className="mt-0.5 px-1 text-xs"
-                                                >
-                                                  {index + 1}
-                                                </Badge>
-                                                <span className="text-muted-foreground">
-                                                  {point}
-                                                </span>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      </div>
-                                    )}
-
-                                    {content.codeExample && (
-                                      <>
-                                        <Separator />
-                                        <div>
-                                          <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
-                                            <Code className="h-4 w-4" />
-                                            Code Example
-                                          </h4>
-                                          <div className="bg-muted rounded-lg p-4 overflow-x-auto">
-                                            <pre className="text-sm text-muted-foreground">
-                                              <code>{content.codeExample}</code>
-                                            </pre>
-                                          </div>
-                                        </div>
-                                      </>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </section>
-                    );
-                  })}
-                </div>
-              </div>
+              <EducationalPane />
             </div>
           </div>
         </section>
@@ -433,100 +374,26 @@ export default function StakingDAppPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="stake" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Lock className="h-5 w-5" />
-                        Stake SOL
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                        <div className="text-center py-8">
-                          <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                          <h3 className="text-lg font-semibold mb-2">
-                            Staking Component
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Implement your staking logic here
-                          </p>
-                          <div className="text-xs text-muted-foreground">
-                            • Amount input component
-                            <br />
-                            • Validator selection
-                            <br />
-                            • Transaction signing
-                            <br />• Confirmation handling
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <TabsContent value="stake">
+                  <StakeForm
+                    balance={userBalance!}
+                    stakedAmount={stakedAmount}
+                    onStake={handleStake}
+                  />
                 </TabsContent>
-
-                <TabsContent value="unstake" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Unlock className="h-5 w-5" />
-                        Unstake SOL
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                        <div className="text-center py-8">
-                          <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                          <h3 className="text-lg font-semibold mb-2">
-                            Unstaking Component
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Implement your unstaking logic here
-                          </p>
-                          <div className="text-xs text-muted-foreground">
-                            • Stake account selection
-                            <br />
-                            • Deactivation process
-                            <br />
-                            • Withdrawal handling
-                            <br />• Cooldown period display
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <TabsContent value="unstake">
+                  <UnstakeForm
+                    stakedAmount={stakedAmount}
+                    onUnstake={handleUnstake}
+                  />
                 </TabsContent>
-
-                <TabsContent value="rewards" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Gift className="h-5 w-5" />
-                        Staking Rewards
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                        <div className="text-center py-8">
-                          <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                          <h3 className="text-lg font-semibold mb-2">
-                            Rewards Component
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Implement your rewards logic here
-                          </p>
-                          <div className="text-xs text-muted-foreground">
-                            • Rewards calculation
-                            <br />
-                            • APR display
-                            <br />
-                            • Historical data
-                            <br />• Performance metrics
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <TabsContent value="rewards">
+                  <RewardsView
+                    totalEarned={totalEarned}
+                    claimed={claimedRewards}
+                    claimable={unclaimedRewards}
+                    onClaim={handleClaimRewards}
+                  />
                 </TabsContent>
               </Tabs>
             )}
