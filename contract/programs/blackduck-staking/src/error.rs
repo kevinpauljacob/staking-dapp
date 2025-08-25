@@ -8,4 +8,6 @@ pub enum StakingError {
     InvalidAmount,
     #[msg("Insufficient vault balance")]
     InsufficientVaultBalance,
+    #[msg("Math error")]
+    MathError,
 }
